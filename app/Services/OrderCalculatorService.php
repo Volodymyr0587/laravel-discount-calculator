@@ -18,7 +18,7 @@ class OrderCalculatorService
     {
         $this->baseTotal = 0;
 
-        foreach ($$this->order['items'] as $item) {
+        foreach ($this->order['items'] as $item) {
             $this->baseTotal += $item['price'] * $item['qty'];
         }
 
