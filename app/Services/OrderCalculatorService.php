@@ -4,12 +4,19 @@ namespace App\Services;
 
 class OrderCalculatorService
 {
+    private const float SALE10 = 0.1;
+    private const float SALE20 = 0.2;
+    private const int FIXED50 = 50;
+    private const FREE_DELIVERY_FROM = 2000;
+    private const COURIER_PRICE = 80;
+
     protected float $baseTotal = 0;
     protected float $discount = 0;
     protected float $deliveryCost = 0;
 
     public function __construct(protected array $order)
-    {}
+    {
+    }
 
     /**
      * Base amount
@@ -48,17 +55,26 @@ class OrderCalculatorService
     {
         $coupon = $this->order['coupon'];
 
-        if (! $coupon) {
+        if (!$coupon) {
             return;
         }
 
-        if ($coupon === 'SALE10' && $this->baseTotal >= 1000) {
-            $this->discount += $this->baseTotal * 0.10;
-        }
+        match ($coupon) {
+            'SALE10' => $this->baseTotal >= 1000
+            ? $this->discount += $this->baseTotal * self::SALE10
+            : null,
 
-        if ($coupon === 'FIXED50' && $this->baseTotal >= 500) {
-            $this->discount += 50;
-        }
+            'SALE20' => $this->baseTotal >= 2000
+            ? $this->discount += $this->baseTotal * self::SALE20
+            : null,
+
+            'FIXED50' => $this->baseTotal >= 500
+            ? $this->discount += self::FIXED50
+            : null,
+
+            default => null,
+        };
+
     }
 
     /**
@@ -72,7 +88,7 @@ class OrderCalculatorService
         }
 
         if ($this->order['delivery_type'] === 'courier') {
-            $this->deliveryCost = $this->baseTotal >= 2000 ? 0 : 80;
+            $this->deliveryCost = $this->baseTotal >= self::FREE_DELIVERY_FROM ? 0 : self::COURIER_PRICE;
         }
     }
 
@@ -81,6 +97,9 @@ class OrderCalculatorService
      */
     public function getFinalTotal(): array
     {
+        $this->discount = 0;
+        $this->deliveryCost = 0;
+
         $this->calculateBaseTotal();
         $this->applyUserDiscount();
         $this->applyCoupon();
