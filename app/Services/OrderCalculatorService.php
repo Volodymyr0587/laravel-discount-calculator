@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\UserType;
+use App\Enums\DeliveryType;
 use App\Services\Coupons\CouponManager;
 
 class OrderCalculatorService
@@ -63,14 +64,9 @@ class OrderCalculatorService
      */
     public function calculateDeliveryCost(): void
     {
-        if ($this->order['delivery_type'] === 'pickup') {
-            $this->deliveryCost = 0;
-            return;
-        }
+        $deliveryType = DeliveryType::tryFrom($this->order['delivery_type']);
 
-        if ($this->order['delivery_type'] === 'courier') {
-            $this->deliveryCost = $this->baseTotal >= self::FREE_DELIVERY_FROM ? 0 : self::COURIER_PRICE;
-        }
+        $this->deliveryCost = $deliveryType?->cost($this->baseTotal) ?? 0;
     }
 
     /**
