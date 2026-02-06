@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserType;
 use App\Services\Coupons\CouponManager;
 
 class OrderCalculatorService
@@ -39,13 +40,9 @@ class OrderCalculatorService
      */
     public function applyUserDiscount(): void
     {
-        $userType = $this->order['user_type'];
+        $userType = UserType::tryFrom($this->order['user_type']);
 
-        $discountPercent = match ($userType) {
-            'regular' => 5,
-            'vip' => 10,
-            default => 0,
-        };
+        $discountPercent = $userType?->discountPercent() ?? 0;
 
         $this->discount += $this->baseTotal * ($discountPercent / 100);
     }
