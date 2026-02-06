@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Services\Coupons\CouponManager;
+
 class OrderCalculatorService
 {
     private const float SALE10 = 0.1;
@@ -16,9 +18,10 @@ class OrderCalculatorService
     protected float $deliveryCost = 0;
     protected float $tax = 0;
 
-    public function __construct(protected array $order)
-    {
-    }
+    public function __construct(
+        protected array $order,
+        protected CouponManager $couponManager
+    ){}
 
     /**
      * Base amount
@@ -55,28 +58,10 @@ class OrderCalculatorService
      */
     public function applyCoupon(): void
     {
-        $coupon = $this->order['coupon'];
-
-        if (!$coupon) {
-            return;
-        }
-
-        match ($coupon) {
-            'SALE10' => $this->baseTotal >= 1000
-            ? $this->discount += $this->baseTotal * self::SALE10
-            : null,
-
-            'SALE20' => $this->baseTotal >= 2000
-            ? $this->discount += $this->baseTotal * self::SALE20
-            : null,
-
-            'FIXED50' => $this->baseTotal >= 500
-            ? $this->discount += self::FIXED50
-            : null,
-
-            default => null,
-        };
-
+        $this->discount += $this->couponManager->calculateDiscount(
+            $this->order['coupon'],
+            $this->baseTotal
+        );
     }
 
     /**

@@ -18,5 +18,9 @@ Route::get('/test-order', function () {
         'delivery_type' => 'courier',
     ];
 
-    return (new OrderCalculatorService($order))->getFinalTotal();
+    $calculator = app(OrderCalculatorService::class, [
+        'order' => $order,
+    ]);
+
+    return $calculator->getFinalTotal();
 });
