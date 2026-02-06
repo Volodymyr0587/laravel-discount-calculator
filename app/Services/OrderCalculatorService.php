@@ -3,9 +3,6 @@
 namespace App\Services;
 
 use App\DTO\OrderData;
-use App\Enums\UserType;
-use App\Enums\CouponCode;
-use App\Enums\DeliveryType;
 use App\Services\Coupons\CouponManager;
 
 class OrderCalculatorService
