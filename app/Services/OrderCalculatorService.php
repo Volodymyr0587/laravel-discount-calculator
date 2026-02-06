@@ -5,10 +5,11 @@ namespace App\Services;
 use App\DTO\OrderData;
 use App\Enums\UserType;
 use App\Services\Coupons\CouponManager;
+use App\Services\TaxCalculatorService;
+use App\Services\CashbackCalculatorService;
 
 class OrderCalculatorService
 {
-    private const int VAT_PERCENT = 20;
     private const int CASHBACK_PERCENT = 2;
 
     protected float $baseTotal = 0;
@@ -19,8 +20,11 @@ class OrderCalculatorService
 
     public function __construct(
         protected OrderData $order,
-        protected CouponManager $couponManager
-    ){}
+        protected CouponManager $couponManager,
+        protected TaxCalculatorService $taxCalculator,
+        protected CashbackCalculatorService $cashbackCalculator,
+    ) {
+    }
 
     /**
      * Base amount
@@ -66,37 +70,12 @@ class OrderCalculatorService
     }
 
     /**
-     * Tax
-     */
-    public function calculateTax(): void
-    {
-        $taxableAmount = max($this->baseTotal - $this->discount, 0);
-
-        $this->tax = $taxableAmount * (self::VAT_PERCENT / 100);
-    }
-
-    /**
-     * Cashback
-     */
-    public function calculateCashback(float $finalTotal): void
-    {
-        if ($this->order->userType !== UserType::VIP) {
-            $this->cashback = 0;
-            return;
-        }
-
-        $this->cashback = $finalTotal * (self::CASHBACK_PERCENT / 100);
-    }
-
-    /**
      * Final calculation
      */
     public function getFinalTotal(): array
     {
         $this->discount = 0;
         $this->deliveryCost = 0;
-        $this->tax = 0;
-        $this->cashback = 0;
 
         $this->calculateBaseTotal();
         $this->applyUserDiscount();
@@ -106,25 +85,31 @@ class OrderCalculatorService
         $maxDiscount = $this->baseTotal * 0.30;
         $this->discount = min($this->discount, $maxDiscount);
 
-        $this->calculateTax();
+        $tax = $this->taxCalculator->calculate(
+            $this->baseTotal,
+            $this->discount
+        );
         $this->calculateDeliveryCost();
 
         $finalTotal = max(
-            $this->baseTotal - $this->discount + $this->tax + $this->deliveryCost,
+            $this->baseTotal - $this->discount + $tax + $this->deliveryCost,
             0
         );
 
-        $this->calculateCashback($finalTotal);
+        $cashback = $this->cashbackCalculator->calculate(
+            $finalTotal,
+            $this->order->userType
+        );
         // rounding
         $finalTotal = round($finalTotal, 2);
-        $this->cashback = (int) round($this->cashback);
+        $this->cashback = (int) round($cashback);
 
         return [
-            'base_total' => $this->baseTotal,
-            'discount' => $this->discount,
-            'tax' => $this->tax,
+            'base_total' => round($this->baseTotal, 2),
+            'discount' => round($this->discount, 2),
+            'tax' => round($tax, 2),
             'delivery' => $this->deliveryCost,
-            'cashback' => $this->cashback,
+            'cashback' => $cashback,
             'final_total' => $finalTotal,
         ];
     }
