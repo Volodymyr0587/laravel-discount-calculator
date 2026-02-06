@@ -9,8 +9,6 @@ use App\Services\Coupons\CouponManager;
 
 class OrderCalculatorService
 {
-    private const int FREE_DELIVERY_FROM = 2000;
-    private const int COURIER_PRICE = 80;
     private const int VAT_PERCENT = 20;
 
     protected float $baseTotal = 0;
