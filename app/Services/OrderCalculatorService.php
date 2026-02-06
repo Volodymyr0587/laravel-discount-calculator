@@ -3,16 +3,19 @@
 namespace App\Services;
 
 use App\DTO\OrderData;
+use App\Enums\UserType;
 use App\Services\Coupons\CouponManager;
 
 class OrderCalculatorService
 {
     private const int VAT_PERCENT = 20;
+    private const int CASHBACK_PERCENT = 2;
 
     protected float $baseTotal = 0;
     protected float $discount = 0;
     protected float $deliveryCost = 0;
     protected float $tax = 0;
+    protected float $cashback = 0;
 
     public function __construct(
         protected OrderData $order,
@@ -73,6 +76,19 @@ class OrderCalculatorService
     }
 
     /**
+     * Cashback
+     */
+    public function calculateCashback(float $finalTotal): void
+    {
+        if ($this->order->userType !== UserType::VIP) {
+            $this->cashback = 0;
+            return;
+        }
+
+        $this->cashback = $finalTotal * (self::CASHBACK_PERCENT / 100);
+    }
+
+    /**
      * Final calculation
      */
     public function getFinalTotal(): array
@@ -80,27 +96,35 @@ class OrderCalculatorService
         $this->discount = 0;
         $this->deliveryCost = 0;
         $this->tax = 0;
+        $this->cashback = 0;
 
         $this->calculateBaseTotal();
         $this->applyUserDiscount();
         $this->applyCoupon();
-        $this->calculateTax();
-        $this->calculateDeliveryCost();
 
         // discount limit — no more than 30%
         $maxDiscount = $this->baseTotal * 0.30;
         $this->discount = min($this->discount, $maxDiscount);
+
+        $this->calculateTax();
+        $this->calculateDeliveryCost();
 
         $finalTotal = max(
             $this->baseTotal - $this->discount + $this->tax + $this->deliveryCost,
             0
         );
 
+        $this->calculateCashback($finalTotal);
+        // rounding
+        $finalTotal = round($finalTotal, 2);
+        $this->cashback = (int) round($this->cashback);
+
         return [
             'base_total' => $this->baseTotal,
             'discount' => $this->discount,
             'tax' => $this->tax,
             'delivery' => $this->deliveryCost,
+            'cashback' => $this->cashback,
             'final_total' => $finalTotal,
         ];
     }
