@@ -1,38 +1,38 @@
-## 🧠 Завдання: Система розрахунку знижки для інтернет-магазину
+## 🧠 Task: Discount calculation system for an online store
 
-### 🎯 Мета
+### 🎯 Goal
 
-Реалізувати **сервіс клас**, який розраховує **фінальну суму замовлення** з урахуванням:
+Implement a **service class** that calculates the **final order amount** taking into account:
 
-* кількості товарів
-* загальної суми
-* типу користувача
-* купона
-* доставки
+* number of products
+* total amount
+* user type
+* coupon
+* delivery
 
 ---
 
-## 📦 Вхідні дані (Order)
+## 📦 Input data (Order)
 
-Є замовлення з такими даними:
+There is an order with the following data:
 
 ```php
 $orderData = [
-    'items' => [
-        ['price' => 1200, 'qty' => 2],
-        ['price' => 500,  'qty' => 1],
-    ],
-    'user_type' => 'regular', // guest | regular | vip
-    'coupon' => 'SALE10',     // null або код
-    'delivery_type' => 'courier', // pickup | courier
+'items' => [
+['price' => 1200, 'qty' => 2],
+['price' => 500, 'qty' => 1],
+],
+'user_type' => 'regular', // guest | regular | vip
+'coupon' => 'SALE10', // null or code
+'delivery_type' => 'courier', // pickup | courier
 ];
 ```
 
 ---
 
-## 📐 Правила розрахунку
+## 📐 Calculation rules
 
-### 1️⃣ Базова сума
+### 1️⃣ Base amount
 
 ```
 total = sum(price * qty)
@@ -40,58 +40,58 @@ total = sum(price * qty)
 
 ---
 
-### 2️⃣ Знижка за типом користувача
+### 2️⃣ Discount by user type
 
-| Тип     | Знижка |
+| Type | Discount |
 | ------- | ------ |
-| guest   | 0%     |
-| regular | 5%     |
-| vip     | 10%    |
+| guest | 0% |
+| regular | 5% |
+| vip | 10% |
 
 ---
 
-### 3️⃣ Купони
+### 3️⃣ Coupons
 
-| Купон   | Умова             | Знижка  |
+| Coupon | Condition | Discount |
 | ------- | ----------------- | ------- |
-| SALE10  | якщо total ≥ 1000 | −10%    |
-| FIXED50 | якщо total ≥ 500  | −50 грн |
+| SALE10 | if total ≥ 1000 | −10% |
+| FIXED50 | if total ≥ 500 | −50 UAH |
 
-⚠️ **Купон не працює, якщо умова не виконана**
+⚠️ **Coupon does not work if the condition is not met**
 
 ---
 
-### 4️⃣ Доставка
+### 4️⃣ Delivery
 
-| Тип     | Вартість                           |
+| Type | Cost |
 | ------- | ---------------------------------- |
-| pickup  | 0                                  |
-| courier | 80 грн                             |
-| courier | **безкоштовно**, якщо total ≥ 2000 |
+| pickup | 0 |
+| courier | 80 UAH |
+| courier | **free**, if total ≥ 2000 |
 
 ---
 
-### 5️⃣ Обмеження
+### 5️⃣ Limitations
 
-* Максимальна сумарна знижка — **30%**
-* Фінальна сума **не може бути < 0**
+* Maximum total discount — **30%**
+* Final amount **cannot be < 0**
 
 ---
 
-## 🏗️ Архітектурні вимоги
+## 🏗️ Architectural requirements
 
-### ✅ Обов’язково:
+### ✅ Required:
 
 * **OrderCalculatorService**
-* окремі методи:
+* individual methods:
 
-  * `calculateBaseTotal()`
-  * `applyUserDiscount()`
-  * `applyCoupon()`
-  * `calculateDeliveryCost()`
-  * `getFinalTotal()`
+* `calculateBaseTotal()`
+* `applyUserDiscount()`
+* `applyCoupon()`
+* `calculateDeliveryCost()`
+* `getFinalTotal()`
 
-📁 Розмісти сервіс у:
+📁 Place the service in:
 
 ```
 app/Services/OrderCalculatorService.php
@@ -99,7 +99,7 @@ app/Services/OrderCalculatorService.php
 
 ---
 
-## 🔢 Очікуваний результат
+## 🔢 Expected result
 
 ```php
 $calculator = new OrderCalculatorService($orderData);
@@ -108,24 +108,23 @@ $result = $calculator->getFinalTotal();
 
 /*
 [
-  'base_total' => 2900,
-  'discount' => 580,
-  'delivery' => 0,
-  'final_total' => 2320,
+'base_total' => 2900,
+'discount' => 580,
+'delivery' => 0,
+'final_total' => 2320,
 ]
 */
 ```
 
 ---
 
-## 🔥 Додаткові ускладнення (необовʼязково)
+## 🔥 Additional complications (optional)
 
-1. Використати **Enum** для:
-   * user type
-   * delivery type
-2. Додати **валідацію** вхідних даних
-3. Покрити сервіс **Pest-тестами**
-4. Зробити `DiscountStrategy` (патерн Strategy)
+1. Use **Enum** for:
+* user type
+* delivery type
+2. Add **validation** of input data
+3. Cover the service with **Pest-tests**
+4. Make a `DiscountStrategy` (Strategy pattern)
 
 ---
-
