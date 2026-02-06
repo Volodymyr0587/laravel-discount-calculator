@@ -6,9 +6,6 @@ use App\Services\Coupons\CouponManager;
 
 class OrderCalculatorService
 {
-    private const float SALE10 = 0.1;
-    private const float SALE20 = 0.2;
-    private const int FIXED50 = 50;
     private const int FREE_DELIVERY_FROM = 2000;
     private const int COURIER_PRICE = 80;
     private const int VAT_PERCENT = 20;
