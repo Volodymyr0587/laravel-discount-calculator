@@ -2,13 +2,15 @@
 
 namespace App\Services\Coupons;
 
+use App\Enums\CouponCode;
+
 class Fixed50Coupon implements CouponStrategy
 {
     private const int AMOUNT = 50;
 
-    public function supports(?string $coupon): bool
+    public function supports(?CouponCode $coupon): bool
     {
-        return $coupon === 'FIXED50';
+        return $coupon === CouponCode::FIXED50;
     }
 
     public function apply(float $baseTotal): float

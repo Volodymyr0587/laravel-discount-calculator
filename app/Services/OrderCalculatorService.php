@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\UserType;
+use App\Enums\CouponCode;
 use App\Enums\DeliveryType;
 use App\Services\Coupons\CouponManager;
 
@@ -53,8 +54,10 @@ class OrderCalculatorService
      */
     public function applyCoupon(): void
     {
+        $coupon = CouponCode::tryFrom($this->order['coupon']);
+
         $this->discount += $this->couponManager->calculateDiscount(
-            $this->order['coupon'],
+            $coupon,
             $this->baseTotal
         );
     }
