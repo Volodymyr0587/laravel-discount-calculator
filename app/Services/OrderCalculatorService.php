@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTO\OrderData;
 use App\Enums\UserType;
 use App\Enums\CouponCode;
 use App\Enums\DeliveryType;
@@ -17,7 +18,7 @@ class OrderCalculatorService
     protected float $tax = 0;
 
     public function __construct(
-        protected array $order,
+        protected OrderData $order,
         protected CouponManager $couponManager
     ){}
 
@@ -28,8 +29,8 @@ class OrderCalculatorService
     {
         $this->baseTotal = 0;
 
-        foreach ($this->order['items'] as $item) {
-            $this->baseTotal += $item['price'] * $item['qty'];
+        foreach ($this->order->items as $item) {
+            $this->baseTotal += $item->total();
         }
 
         return $this->baseTotal;
@@ -40,9 +41,7 @@ class OrderCalculatorService
      */
     public function applyUserDiscount(): void
     {
-        $userType = UserType::tryFrom($this->order['user_type']);
-
-        $discountPercent = $userType?->discountPercent() ?? 0;
+        $discountPercent = $this->order->userType->discountPercent();
 
         $this->discount += $this->baseTotal * ($discountPercent / 100);
     }
@@ -52,10 +51,8 @@ class OrderCalculatorService
      */
     public function applyCoupon(): void
     {
-        $coupon = CouponCode::tryFrom($this->order['coupon']);
-
         $this->discount += $this->couponManager->calculateDiscount(
-            $coupon,
+            $this->order->coupon,
             $this->baseTotal
         );
     }
@@ -65,9 +62,7 @@ class OrderCalculatorService
      */
     public function calculateDeliveryCost(): void
     {
-        $deliveryType = DeliveryType::tryFrom($this->order['delivery_type']);
-
-        $this->deliveryCost = $deliveryType?->cost($this->baseTotal) ?? 0;
+        $this->deliveryCost = $this->order->deliveryType->cost($this->baseTotal);
     }
 
     /**

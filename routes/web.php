@@ -1,5 +1,10 @@
 <?php
 
+use App\DTO\OrderData;
+use App\DTO\OrderItemData;
+use App\Enums\CouponCode;
+use App\Enums\DeliveryType;
+use App\Enums\UserType;
 use App\Services\OrderCalculatorService;
 use Illuminate\Support\Facades\Route;
 
@@ -8,15 +13,15 @@ Route::get('/', function () {
 });
 
 Route::get('/test-order', function () {
-    $order = [
-        'items' => [
-            ['price' => 1200, 'qty' => 2],
-            ['price' => 500, 'qty' => 1],
+    $order = new OrderData(
+        items: [
+            new OrderItemData(price: 1200, qty: 2),
+            new OrderItemData(price: 500, qty: 1),
         ],
-        'user_type' => 'regular',
-        'coupon' => 'SALE10',
-        'delivery_type' => 'courier',
-    ];
+        userType: UserType::REGULAR,
+        deliveryType: DeliveryType::COURIER,
+        coupon: CouponCode::SALE10,
+    );
 
     $calculator = app(OrderCalculatorService::class, [
         'order' => $order,
