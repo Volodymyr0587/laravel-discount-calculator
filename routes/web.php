@@ -1,16 +1,21 @@
 <?php
 
 use App\DTO\OrderData;
-use App\DTO\OrderItemData;
-use App\Enums\CouponCode;
-use App\Enums\DeliveryType;
 use App\Enums\UserType;
-use App\Services\OrderCalculatorService;
+use App\Enums\CouponCode;
+use App\DTO\OrderItemData;
+use App\Enums\DeliveryType;
 use Illuminate\Support\Facades\Route;
+use App\Services\OrderCalculatorService;
+use App\Http\Controllers\OrderCalculatorController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Order Calculator Routes
+Route::get('/calculator', [OrderCalculatorController::class, 'create'])->name('order.calculator');
+Route::post('/calculator', [OrderCalculatorController::class, 'calculate'])->name('order.calculate');
 
 Route::get('/test-order', function () {
     $order = new OrderData(
